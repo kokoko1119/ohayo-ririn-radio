@@ -1290,5 +1290,69 @@ async function init() {
 }
 init();
 </script>
+<!-- push notifications for おはよう！リリン放送局 (added 2026-11-15; the button issues a
+     subscription the listener hands to Muse once, Muse's morning job sends the push) -->
+<style>
+#pushBtn{position:fixed;right:14px;bottom:14px;z-index:9999;background:#ffd028;color:#0c0e14;border:none;border-radius:999px;padding:12px 18px;font:700 14px "Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.45);cursor:pointer}
+#pushPanel{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px}
+#pushPanel .card{background:#161a26;color:#f2f3f7;border-radius:14px;max-width:520px;width:100%;padding:22px;font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+#pushPanel p{margin:0 0 10px;line-height:1.6}
+#pushPanel textarea{width:100%;height:110px;background:#0c0e14;color:#f2f3f7;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px;font-size:11px;box-sizing:border-box}
+#pushPanel button{background:#ffd028;color:#0c0e14;border:none;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;margin-top:10px}
+#pushPanel .close{background:transparent;color:#8d93a8;border:1px solid rgba(255,255,255,.25);margin-left:8px}
+</style>
+<button id="pushBtn" type="button">🔔 通知を受け取る</button>
+<div id="pushPanel"><div class="card">
+<p id="pushMsg"></p>
+<textarea id="pushJson" readonly style="display:none"></textarea>
+<div>
+<button id="pushCopy" type="button" style="display:none">登録情報をコピー</button>
+<button id="pushClose" class="close" type="button">閉じる</button>
+</div>
+</div></div>
+<script>
+(function () {
+  var VAPID = 'BLHLY1IJqy-Bb58IJLr0brdqRRXIO4nj2KhYnb-y10FsyQL7wIgSEpv22R_1fvNnsEpZe7H2hrFUHzE4dRdLnaU';
+  var btn = document.getElementById('pushBtn'), panel = document.getElementById('pushPanel'),
+      msg = document.getElementById('pushMsg'), ta = document.getElementById('pushJson'),
+      copyBtn = document.getElementById('pushCopy');
+  function show(text, sub) {
+    msg.textContent = text;
+    if (sub) { ta.value = sub; ta.style.display = 'block'; copyBtn.style.display = 'inline-block'; }
+    panel.style.display = 'flex';
+  }
+  document.getElementById('pushClose').addEventListener('click', function () { panel.style.display = 'none'; });
+  copyBtn.addEventListener('click', function () {
+    ta.select();
+    if (navigator.clipboard) { navigator.clipboard.writeText(ta.value).catch(function () {}); }
+    else { document.execCommand('copy'); }
+    copyBtn.textContent = 'コピーしました';
+    setTimeout(function () { copyBtn.textContent = '登録情報をコピー'; }, 2000);
+  });
+  function urlB64ToUint8Array(s) {
+    var pad = '='.repeat((4 - s.length % 4) % 4);
+    var b = atob((s + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    var arr = new Uint8Array(b.length);
+    for (var i = 0; i < b.length; i++) arr[i] = b.charCodeAt(i);
+    return arr;
+  }
+  btn.addEventListener('click', async function () {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      show('この開き方では通知に対応していません。ホーム画面に追加したアイコンから開いてください。');
+      return;
+    }
+    try {
+      var reg = await navigator.serviceWorker.register('sw.js');
+      var perm = await Notification.requestPermission();
+      if (perm !== 'granted') { show('通知が許可されませんでした。iPhone の「設定」→「通知」→「リリン放送局」から許可してください。'); return; }
+      var sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID) });
+      show('登録情報を発行しました。下の文字列をコピーして、Muse のチャットでシロに送ってください。一度送れば、毎朝の放送で通知が届くようになります。', JSON.stringify(sub));
+    } catch (e) {
+      show('登録に失敗しました：' + (e && e.message ? e.message : e));
+    }
+  });
+})();
+</script>
 </body>
 </html>
