@@ -1,7 +1,7 @@
 {
   "format": "myradio/station-1",
   "name": "おはよう！リリン放送局",
-  "description": "リリンちゃんが毎朝お届けする、総合ニュース・山梨ローカル・リハビリ健康・AIテック・ゲームの全部入りモーニングラジオ。",
+  "description": "リリンちゃんが毎朝お届けするモーニングラジオ。山梨ローカル、PTとリハビリ、原神とグラブルのニュースを詳しく、本日の全国トピックスは見出しでサッと紹介します。",
   "tagline": "毎朝の全部入りニュース",
   "logo": "logo.svg",
   "url": "https://kokoko1119.github.io/ohayo-ririn-radio/",
