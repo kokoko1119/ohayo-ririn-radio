@@ -5,34 +5,33 @@
   896,
   768
  ],
- "background": "#161a26",
+ "background": "#194e23",
  "base": "base.png",
- "depth": "depth.png",
  "parts": {
   "mouth_half": {
    "src": "mouth_half.png",
-   "x": 430,
-   "y": 318
+   "x": 320,
+   "y": 225
   },
   "mouth_open": {
    "src": "mouth_open.png",
-   "x": 430,
-   "y": 318
+   "x": 320,
+   "y": 225
   },
   "blink": {
    "src": "blink.png",
-   "x": 448,
-   "y": 245
+   "x": 260,
+   "y": 150
   },
   "smile_mouth": {
    "src": "smile_mouth.png",
-   "x": 430,
-   "y": 318
+   "x": 320,
+   "y": 225
   },
   "half_blink": {
    "src": "half_blink.png",
-   "x": 448,
-   "y": 245
+   "x": 260,
+   "y": 150
   }
  },
  "mouth": {
@@ -48,5 +47,5 @@
    "mouth": "smile_mouth"
   }
  },
- "note": "AIで生成したキャラクターです。base.png に、口（mouth_*）と目（blink・look_*）の小さな画像を x, y の位置に重ねる"
+ "note": "AIで生成したキャラクターです（FGOのマシュ・キリエライトがモデル）。base.png は承認済みの全身イラストからのバストアップ切り出し。口・目の差分は base を画像編集で描き直し、変わった範囲だけを切り出したもの"
 }
