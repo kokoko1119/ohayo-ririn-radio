@@ -223,7 +223,7 @@ main{max-width:1280px;margin:0 auto;padding:16px}
 #cam img,#cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:6px}
 #cam video{opacity:0;transition:opacity .16s linear}
 #cam video.on{opacity:1}
-#cam canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:6px}
+#cam canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:6px;transition:opacity .19s ease}
 #cam [hidden]{display:none}
 #cam .corner{position:absolute;width:44px;height:44px;border:4px solid var(--yellow)}
 #cam .c1{left:-14px;top:-14px;border-right:0;border-bottom:0}#cam .c2{right:-14px;top:-14px;border-left:0;border-bottom:0}
@@ -568,6 +568,8 @@ new ResizeObserver(([e]) => { $("stage").style.transform = `scale(${e.contentRec
 //             little toward the pointer, the body breathes and the back hair sways (a pseudo Live2D)
 let CHAR = { type: "clips", idle: "idle.webp", talk: [], background: "#161a26" };
 const charUrl = f => `character/${f}`;
+const pUrl = f => `character-partner/${f}`;
+let CUR = null;   // the character config whose face is on screen (the host's, or the partner's while her lines play)
 const vids = [$("va"), $("vb")];
 let active = 0, talking = false, lastUnit = "";
 const pickUnit = () => { const c = CHAR.talk.filter(u => u !== lastUnit); lastUnit = c[Math.floor(Math.random() * c.length)] ?? CHAR.talk[0]; return charUrl(lastUnit); };
@@ -625,16 +627,30 @@ void main() {
   gl_FragColor = vec4(c.rgb + bg * (1. - c.a), 1.);
 }`;
 // an image of the character; one retry, since a busy server can drop one of the many small requests
-const loadImg = (src, tries = 2) => new Promise((ok, ng) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ng; i.src = charUrl(src); })
-  .catch(e => tries > 1 ? loadImg(src, tries - 1) : Promise.reject(e));
+const loadImg = (src, tries = 2, urlFn = charUrl) => new Promise((ok, ng) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ng; i.src = urlFn(src); })
+  .catch(e => tries > 1 ? loadImg(src, tries - 1, urlFn) : Promise.reject(e));
 async function initSprites() {
   const [w, h] = CHAR.size;
+  CUR = CHAR;
   SP.base = await loadImg(CHAR.base);
   SP.depth = CHAR.depth ? await loadImg(CHAR.depth).catch(() => null) : null;
   SP.parts = {};
   // a part that does not load is left out (that eye or mouth just does not change), not the whole character
   await Promise.all(Object.entries(CHAR.parts || {}).map(async ([k, p]) => {
     const img = await loadImg(p.src).catch(() => null); if (img) SP.parts[k] = { img, x: p.x, y: p.y }; }));
+  SP.actors = { host: { cfg: CHAR, base: SP.base, parts: SP.parts, depth: SP.depth } };
+  // the partner (a second sprites pack in character-partner/, same canvas size): she appears while a line
+  // flagged "partner" in lines_timed is playing. If her pack is missing, the host simply stays on screen.
+  try {
+    const pcfg = await (await fetch("character-partner/character.json", { cache: "no-store" })).json();
+    if (pcfg.type === "sprites" && pcfg.size?.[0] === w && pcfg.size?.[1] === h) {
+      const pbase = await loadImg(pcfg.base, 2, pUrl);
+      const pparts = {};
+      await Promise.all(Object.entries(pcfg.parts || {}).map(async ([k, p]) => {
+        const img = await loadImg(p.src, 2, pUrl).catch(() => null); if (img) pparts[k] = { img, x: p.x, y: p.y }; }));
+      SP.actors.partner = { cfg: pcfg, base: pbase, parts: pparts, depth: null };
+    }
+  } catch (e) { console.warn("partner character", e); }
   SP.comp = Object.assign(document.createElement("canvas"), { width: w, height: h });
   SP.cx = SP.comp.getContext("2d");
   const cv = $("charcv"); cv.width = w; cv.height = h; cv.hidden = false;
@@ -658,7 +674,7 @@ async function initSprites() {
     gl.uniform1f(gl.getUniformLocation(pr, "hasDep"), SP.depth ? 1 : 0);
     const bg = CHAR.background.match(/\w\w/g).map(x => parseInt(x, 16) / 255);
     gl.uniform3f(gl.getUniformLocation(pr, "bg"), ...bg);
-    SP.u = { look: gl.getUniformLocation(pr, "look"), t: gl.getUniformLocation(pr, "t") };
+    SP.u = { look: gl.getUniformLocation(pr, "look"), t: gl.getUniformLocation(pr, "t"), bg: gl.getUniformLocation(pr, "bg"), hasDep: gl.getUniformLocation(pr, "hasDep") };
   }
   SP.ready = true;
 }
@@ -670,6 +686,29 @@ function compose(layers) {
   const c = SP.cx; c.clearRect(0, 0, SP.comp.width, SP.comp.height); c.drawImage(SP.base, 0, 0);
   for (const n of layers) { const p = SP.parts[n]; if (p) c.drawImage(p.img, p.x, p.y); }
   if (SP.gl) { const gl = SP.gl; gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, SP.colTex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, SP.comp); }
+}
+// ---------- whose face is on screen: the host's, or the partner's while her lines play ----------
+SP.actor = "host";
+let actorWanted = "host", actorFading = false;
+function setActor(name) {
+  const a = SP.actors?.[name]; if (!a) return;
+  SP.actor = name; CUR = a.cfg; SP.base = a.base; SP.parts = a.parts; SP.depth = a.depth; SP.key = ""; SP.mouth = 0;
+  document.documentElement.style.setProperty("--cam", a.cfg.background);
+  if (SP.gl && SP.u) {
+    const gl = SP.gl, bg = a.cfg.background.match(/\w\w/g).map(x => parseInt(x, 16) / 255);
+    gl.uniform3f(SP.u.bg, ...bg);
+    if (a.depth) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, SP.depTex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, a.depth); }
+    gl.uniform1f(SP.u.hasDep, a.depth ? 1 : 0);
+  }
+}
+// a short fade out, swap the face, fade back in (the audio and everything else keep running untouched)
+function wantActor(name) {
+  actorWanted = name;
+  if (!SP.actors?.partner || name === SP.actor || actorFading) return;
+  actorFading = true;
+  const cv = $("charcv");
+  cv.style.opacity = "0";
+  setTimeout(() => { setActor(actorWanted); cv.style.opacity = ""; actorFading = false; }, 200);
 }
 function spriteFrame(t, now, speaking, kind) {
   if (!SP.ready) return;
@@ -698,20 +737,20 @@ function spriteFrame(t, now, speaking, kind) {
   SP.look = SP.look.map((v, i) => v + (target[i] - v) * .07);
   // a blink: half closed, closed, half closed (without a "half" image: closed only); now and then a double blink
   if (now > SP.nextBlink) { SP.blinkAt = now; SP.nextBlink = now + (Math.random() < .15 ? 260 : 2200 + Math.random() * 4000); }
-  const bt = now - (SP.blinkAt ?? -1e9), half = CHAR.eye?.half;
-  const blinkEye = bt < 40 ? half || CHAR.eye?.blink : bt < 120 ? CHAR.eye?.blink : bt < 170 ? half : null;
+  const bt = now - (SP.blinkAt ?? -1e9), half = CUR.eye?.half;
+  const blinkEye = bt < 40 ? half || CUR.eye?.blink : bt < 120 ? CUR.eye?.blink : bt < 170 ? half : null;
   // she smiles for the goodbye: an expression names an eye and / or a mouth image ({eye, mouth}; older packs: [eye, mouth])
-  const ex = kind === "closing" ? CHAR.expressions?.smile : null;
+  const ex = kind === "closing" ? CUR.expressions?.smile : null;
   const exEye = Array.isArray(ex) ? ex[0] : ex?.eye, exMouth = Array.isArray(ex) ? ex[1] : ex?.mouth;
-  const eye = exEye || blinkEye || (gaze?.[0] < -.4 ? CHAR.eye?.left : gaze?.[0] > .4 ? CHAR.eye?.right : null);
-  const mouth = m ? CHAR.mouth?.[m] : exMouth;
+  const eye = exEye || blinkEye || (gaze?.[0] < -.4 ? CUR.eye?.left : gaze?.[0] > .4 ? CUR.eye?.right : null);
+  const mouth = m ? CUR.mouth?.[m] : exMouth;
   compose([eye, mouth].filter(Boolean));
   if (SP.gl) {
     const gl = SP.gl;
     gl.uniform2f(SP.u.look, SP.look[0], SP.look[1] * .6); gl.uniform1f(SP.u.t, now / 1000);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   } else {
-    const c = $("charcv").getContext("2d"); c.fillStyle = CHAR.background; c.fillRect(0, 0, SP.comp.width, SP.comp.height); c.drawImage(SP.comp, 0, 0);
+    const c = $("charcv").getContext("2d"); c.fillStyle = CUR.background; c.fillRect(0, 0, SP.comp.width, SP.comp.height); c.drawImage(SP.comp, 0, 0);
   }
 }
 
@@ -871,6 +910,7 @@ function tick(now) {
     const part = Math.max(0, ep.segments.findIndex(s => t >= s.start && t < s.end));
     showPart(t >= dur - 0.05 ? ep.segments.length - 1 : part);
     const line = ep.lines_timed.find(l => t >= l.start && t < l.end + 0.3);
+    if (CHAR.type === "sprites" && line) wantActor(line.partner ? "partner" : "host");
     const cap = line ? line.show : "";
     if ($("cap").firstChild.textContent !== cap) { $("cap").firstChild.textContent = cap; $("now").textContent = cap; }
     if (CHAR.type !== "sprites") setTalking(speakingAt(t));
