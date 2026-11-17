@@ -15,9 +15,9 @@
     }
   ],
   "lang": "ja",
-  "name": "おはよう！マシュ放送局",
+  "name": "マシュ・リリスのニュース放送局",
   "scope": ".",
-  "short_name": "マシュ放送局",
+  "short_name": "マシュ・リリス",
   "start_url": ".",
   "theme_color": "#0c0e14"
 }

@@ -1,11 +1,11 @@
-// おはよう！マシュ放送局 — プッシュ通知用サービスワーカー
+// マシュ・リリスのニュース放送局 — プッシュ通知用サービスワーカー
 self.addEventListener('install', (event) => { self.skipWaiting(); });
 self.addEventListener('activate', (event) => { event.waitUntil(self.clients.claim()); });
 
 self.addEventListener('push', (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch (e) { /* ignore */ }
-  const title = data.title || 'おはよう！マシュ放送局';
+  const title = data.title || 'マシュ・リリスのニュース放送局';
   const options = {
     body: data.body || '新しい放送が公開されました',
     icon: 'icons/icon-192.png',
