@@ -14,5 +14,5 @@
 
 ## クレジット
 
-- 声：COEIROINK:リリンちゃん
+- 声：COEIROINK:アルマちゃん／COEIROINK:アメノちゃん
 - この局は [myradio](https://github.com/monoradio102/myradio) のテンプレートを使って作られています（プログラム：MITライセンス／台本：CC0）
