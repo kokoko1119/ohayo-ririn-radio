@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ものラジオ</title>
+<title>おはよう！マシュ放送局</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0c0e14">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="リリン放送局">
+<meta name="apple-mobile-web-app-title" content="マシュ放送局">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" id="favicon" href="data:,">
 <script>if (/[?&]embed\b/.test(location.search)) document.documentElement.classList.add("embed")</script>
@@ -1290,7 +1290,7 @@ async function init() {
 }
 init();
 </script>
-<!-- push notifications for おはよう！リリン放送局 (added 2026-11-15; the button issues a
+<!-- push notifications for おはよう！マシュ放送局 (added 2026-11-15; the button issues a
      subscription the listener hands to Muse once, Muse's morning job sends the push) -->
 <style>
 #pushBtn{position:fixed;right:14px;bottom:14px;z-index:9999;background:#ffd028;color:#0c0e14;border:none;border-radius:999px;padding:12px 18px;font:700 14px "Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.45);cursor:pointer}
@@ -1344,7 +1344,7 @@ init();
     try {
       var reg = await navigator.serviceWorker.register('sw.js');
       var perm = await Notification.requestPermission();
-      if (perm !== 'granted') { show('通知が許可されませんでした。iPhone の「設定」→「通知」→「リリン放送局」から許可してください。'); return; }
+      if (perm !== 'granted') { show('通知が許可されませんでした。iPhone の「設定」→「通知」→「マシュ放送局」から許可してください。'); return; }
       var sub = await reg.pushManager.getSubscription();
       if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID) });
       show('登録情報を発行しました。下の文字列をコピーして、Muse のチャットでシロに送ってください。一度送れば、毎朝の放送で通知が届くようになります。', JSON.stringify(sub));
