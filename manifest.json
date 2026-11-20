@@ -1,0 +1,23 @@
+{
+  "background_color": "#07080c",
+  "description": "毎朝7時、マシュとリリスがニュースを読むラジオ",
+  "display": "standalone",
+  "icons": [
+    {
+      "sizes": "192x192",
+      "src": "icons/icon-192.png",
+      "type": "image/png"
+    },
+    {
+      "sizes": "512x512",
+      "src": "icons/icon-512.png",
+      "type": "image/png"
+    }
+  ],
+  "lang": "ja",
+  "name": "マシュ・リリスのニュース放送局",
+  "scope": ".",
+  "short_name": "マシュ・リリス",
+  "start_url": ".",
+  "theme_color": "#0c0e14"
+}
