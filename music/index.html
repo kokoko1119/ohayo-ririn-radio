@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>マシュ・リリスの音楽放送局</title>
+<meta name="description" content="マシュとリリスがお届けする、夜の音楽ラジオ。トークと公式ミュージックビデオをプレイリストでつないで聞く番組です。">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10122a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="音楽放送局">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<style>
+  :root{
+    --bg:#0b0d20;
+    --bg2:#141736;
+    --card:#1a1d3d;
+    --card-line:rgba(255,255,255,.09);
+    --text:#eef0ff;
+    --muted:#9aa0c7;
+    --gold:#f5c560;
+    --gold-dim:rgba(245,197,96,.16);
+    --jp:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;color:var(--text);font-family:var(--jp);
+    background:
+      radial-gradient(90% 40% at 50% -6%, rgba(96,88,190,.35), transparent 70%),
+      radial-gradient(60% 30% at 85% 12%, rgba(245,197,96,.07), transparent 70%),
+      linear-gradient(180deg, var(--bg2), var(--bg) 340px);
+    min-height:100vh;
+  }
+  main{max-width:640px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom))}
+  header{text-align:center;padding:18px 0 8px}
+  .moon{font-size:15px;letter-spacing:.55em;color:var(--gold);text-indent:.55em}
+  h1{margin:10px 0 6px;font-size:26px;font-weight:800;letter-spacing:.06em;line-height:1.35}
+  .tagline{margin:0;color:var(--muted);font-size:13.5px;line-height:1.7}
+  .hosts{margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .hosts span{font-size:12px;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(245,197,96,.35);
+    padding:4px 12px;border-radius:999px;letter-spacing:.08em}
+  h2{margin:30px 0 12px;font-size:14px;letter-spacing:.22em;color:var(--muted);font-weight:700}
+  .ep{background:var(--card);border:1px solid var(--card-line);border-radius:16px;padding:18px 18px 16px;margin-bottom:16px;
+    box-shadow:0 10px 28px rgba(0,0,0,.35)}
+  .ep-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .ep-no{color:var(--gold);font-weight:800;font-size:13px;letter-spacing:.14em}
+  .ep-date{color:var(--muted);font-size:12.5px}
+  .ep-title{margin:6px 0 2px;font-size:18px;font-weight:700;line-height:1.45}
+  .ep-note{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.7}
+  .tracks{list-style:none;margin:14px 0 4px;padding:0;counter-reset:tr}
+  .tracks li{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--card-line);font-size:14.5px;line-height:1.55}
+  .tracks li:first-child{border-top:none}
+  .tracks .n{counter-increment:tr;color:var(--gold);font-weight:700;min-width:1.4em;text-align:right}
+  .tracks .n::before{content:counter(tr)}
+  .tracks .artist{color:var(--muted);font-size:13px}
+  .corner{margin-top:10px;font-size:12.5px;color:var(--muted);background:rgba(255,255,255,.04);
+    border:1px dashed rgba(255,255,255,.16);border-radius:10px;padding:8px 12px;line-height:1.6}
+  .corner b{color:var(--text);font-weight:600}
+  .play{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;
+    padding:13px 16px;border-radius:999px;font-size:15px;font-weight:700;letter-spacing:.05em;text-decoration:none}
+  a.play{background:var(--gold);color:#231a04}
+  a.play:active{opacity:.85}
+  .play.soon{background:rgba(255,255,255,.07);color:var(--muted);border:1px solid var(--card-line);font-weight:600}
+  .play .tri{font-size:12px}
+  footer{margin-top:34px;text-align:center;color:var(--muted);font-size:12px;line-height:1.9}
+  .howto{margin-top:22px;background:rgba(255,255,255,.04);border:1px solid var(--card-line);border-radius:14px;
+    padding:14px 16px;font-size:13px;line-height:1.8;color:var(--muted)}
+  .howto b{color:var(--text)}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="moon">☾ ♪</div>
+    <h1>マシュ・リリスの<br>音楽放送局</h1>
+    <p class="tagline">夜に聞く、トークと音楽のラジオ。<br>マシュとリリスが、曲の紹介をしながらお届けします。</p>
+    <div class="hosts"><span>マシュ</span><span>リリス</span></div>
+  </header>
+
+  <h2>これまでの放送</h2>
+  <div id="episodes"></div>
+
+  <div class="howto">
+    <b>聞き方</b>：各回の「YouTubeプレイリストで聞く」を開くと、トークと曲が順番に再生されます。
+    YouTube Premium なら広告なし・画面を消しても再生できます。
+  </div>
+
+  <footer>
+    声：COEIROINK:アルマちゃん／COEIROINK:アメノちゃん<br>
+    曲は各アーティストの公式ミュージックビデオへのリンクです。
+  </footer>
+</main>
+
+<script>
+/* ============================================================
+   回の設定はここだけ。新しい回はこの配列に行を足す。
+   playlistUrl に YouTube プレイリストの URL を入れると
+   「準備中」が再生ボタンに変わる（空文字 "" の間は準備中表示）。
+   ============================================================ */
+const EPISODES = [
+  {
+    no: 1,
+    date: "2026-11-23",
+    title: "第1回 ― 誰かを思う曲ばかり",
+    note: "初回はリクエストの6曲で。1970年代の名曲から最近の曲まで、バラード多めの並びです。",
+    corner: "真ん中トーク：マシュとリリスの自己紹介",
+    tracks: [
+      { artist: "sumika", title: "溶けた体温、蕩けた魔法" },
+      { artist: "サザンオールスターズ", title: "いとしのエリー" },
+      { artist: "長渕剛", title: "巡恋歌" },
+      { artist: "Mr.Children", title: "Sign" },
+      { artist: "Aqua Timez", title: "ALONES" },
+      { artist: "ケツメイシ", title: "友よ 〜この先もずっと…" }
+    ],
+    playlistUrl: "https://www.youtube.com/playlist?list=PLAg4niCykbRo"
+  }
+  /* 第2回はここに同じ形で足す:
+  ,{
+    no: 2,
+    date: "2026-__-__",
+    title: "第2回 ― ",
+    note: "",
+    corner: "",
+    tracks: [ { artist: "", title: "" } ],
+    playlistUrl: "https://www.youtube.com/playlist?list=..."
+  }
+  */
+];
+
+const box = document.getElementById("episodes");
+for (const ep of EPISODES) {
+  const card = document.createElement("section");
+  card.className = "ep";
+  const dateLabel = ep.date.replaceAll("-", "/");
+  let html = `
+    <div class="ep-head"><span class="ep-no">EPISODE ${ep.no}</span><span class="ep-date">${dateLabel}</span></div>
+    <p class="ep-title">${ep.title}</p>`;
+  if (ep.note) html += `<p class="ep-note">${ep.note}</p>`;
+  html += `<ol class="tracks">` + ep.tracks.map(t =>
+    `<li><span class="n"></span><span>${t.title}<br><span class="artist">${t.artist}</span></span></li>`).join("") + `</ol>`;
+  if (ep.corner) html += `<p class="corner">中間コーナー ─ <b>${ep.corner}</b></p>`;
+  if (ep.playlistUrl) {
+    html += `<a class="play" href="${ep.playlistUrl}" target="_blank" rel="noopener"><span class="tri">▶</span>YouTubeプレイリストで聞く</a>`;
+  } else {
+    html += `<div class="play soon"><span class="tri">♪</span>プレイリスト準備中</div>`;
+  }
+  card.innerHTML = html;
+  box.appendChild(card);
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
