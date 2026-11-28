@@ -1,0 +1,35 @@
+{
+ "format": "myradio/character-1",
+ "type": "sprites",
+ "size": [
+  896,
+  768
+ ],
+ "background": "#0d1526",
+ "base": "base.png",
+ "parts": {
+  "blink": {
+   "src": "blink.png",
+   "x": 336,
+   "y": 134
+  },
+  "mouth_half": {
+   "src": "mouth_half.png",
+   "x": 433,
+   "y": 207
+  },
+  "mouth_open": {
+   "src": "mouth_open.png",
+   "x": 433,
+   "y": 207
+  }
+ },
+ "mouth": {
+  "1": "mouth_half",
+  "2": "mouth_open"
+ },
+ "eye": {
+  "blink": "blink"
+ },
+ "note": "相方リリス。公式ミニ絵ペア（口閉じbase／口開き差分）。マシュと同じ大きさに見えるようアップ合成（scale 0.98, offset (-133,-134)）。パッチは差分マスクをアルファにしたもの（変わった画素だけを重ねる）。まばたきは旧生成バリアントの閉じ目を幾何変換で移植し同様に差分アルファ化。半開きは開き口の縦圧縮"
+}

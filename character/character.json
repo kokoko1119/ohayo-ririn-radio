@@ -1,0 +1,51 @@
+{
+ "format": "myradio/character-1",
+ "type": "sprites",
+ "size": [
+  896,
+  768
+ ],
+ "background": "#0d1526",
+ "base": "base.png",
+ "parts": {
+  "mouth_half": {
+   "src": "mouth_half.png",
+   "x": 320,
+   "y": 225
+  },
+  "mouth_open": {
+   "src": "mouth_open.png",
+   "x": 320,
+   "y": 225
+  },
+  "blink": {
+   "src": "blink.png",
+   "x": 260,
+   "y": 150
+  },
+  "smile_mouth": {
+   "src": "smile_mouth.png",
+   "x": 320,
+   "y": 225
+  },
+  "half_blink": {
+   "src": "half_blink.png",
+   "x": 260,
+   "y": 150
+  }
+ },
+ "mouth": {
+  "1": "mouth_half",
+  "2": "mouth_open"
+ },
+ "eye": {
+  "blink": "blink",
+  "half": "half_blink"
+ },
+ "expressions": {
+  "smile": {
+   "mouth": "smile_mouth"
+  }
+ },
+ "note": "AIで生成したキャラクターです（FGOのマシュ・キリエライトがモデル）。base.png は承認済みの全身イラストからのバストアップ切り出し。口・目の差分は base を画像編集で描き直し、変わった範囲だけを切り出したもの"
+}
